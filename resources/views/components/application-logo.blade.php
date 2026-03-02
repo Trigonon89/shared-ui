@@ -1,5 +1,5 @@
 <img 
-    src="{{ asset('images/trigonon_portal_logo.png') }}" 
+    src="{{ asset('images/app_logo.png') }}"
     alt="{{ config('app.name') }}" 
     {{ $attributes }}
 />
