@@ -19,19 +19,7 @@
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
-            @if(session('impersonating_original_id'))
-                <div class="bg-yellow-100 text-yellow-800 px-4 py-2 text-sm flex justify-between items-center">
-                    <span><strong>Impersonating:</strong> {{ Auth::user()->name }} — {{ Auth::user()->account?->name }}</span>
-                    <form method="POST" action="{{ route('impersonate.stop') }}">
-                        @csrf
-                        <button type="submit" class="underline font-semibold">Stop Impersonating</button>
-                    </form>
-                </div>
-            @elseif(Auth::check() && Auth::user()->account?->is_admin)
-                <div class="bg-red-50 text-red-800 px-4 py-2 text-sm text-center">
-                    <strong>Admin Mode</strong> — You are logged in as an administrator
-                </div>
-            @endif
+            @stack('banners')
 
             <!-- Page Breadcrumbs -->
             @isset($breadcrumb)
