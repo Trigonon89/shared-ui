@@ -1,5 +1,5 @@
 <div
-    x-data="{ open: false }"
+    x-data="{ open: false, downloadNotice: false }"
     x-init="
         window.addEventListener('pageshow', e => { if (e.persisted) open = false });
 
@@ -24,20 +24,8 @@
 
             const da = e.target.closest('a[href][data-download]');
             if (!da) return;
-            const token = Math.random().toString(36).slice(2);
-            const url = new URL(da.getAttribute('href'), window.location.href);
-            url.searchParams.set('download_token', token);
-            da.href = url.toString();
-            open = true;
-            const cookieName = 'download_token_' + token;
-            const poll = setInterval(() => {
-                if (document.cookie.split(';').some(c => c.trim() === cookieName + '=1')) {
-                    open = false;
-                    clearInterval(poll);
-                    document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                }
-            }, 300);
-            setTimeout(() => { clearInterval(poll); open = false; }, 30000);
+            downloadNotice = true;
+            setTimeout(() => { downloadNotice = false; }, 3000);
         });
     "
     @submit.window="if (!$event.defaultPrevented) open = true"
@@ -52,5 +40,15 @@
             </svg>
             <span class="text-sm font-medium text-gray-700">Processing...</span>
         </div>
+    </div>
+
+    <div x-show="downloadNotice" x-cloak
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
+         class="fixed bottom-6 right-6 z-[60] flex items-center gap-3 bg-gray-800 text-white text-sm font-medium px-4 py-3 rounded-lg shadow-lg">
+        <svg class="w-4 h-4 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0-3-3m3 3 3-3M3 17V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        </svg>
+        Download started
     </div>
 </div>
