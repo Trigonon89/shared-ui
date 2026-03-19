@@ -8,6 +8,7 @@
             if (!a) return null;
             if (a.target === '_blank') return null;
             if (a.hasAttribute('download')) return null;
+            if (a.hasAttribute('data-download')) return null;
             const href = a.getAttribute('href');
             if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return null;
             try {
@@ -19,7 +20,24 @@
 
         document.addEventListener('click', e => {
             if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-            if (navTarget(e.target)) open = true;
+            if (navTarget(e.target)) { open = true; return; }
+
+            const da = e.target.closest('a[href][data-download]');
+            if (!da) return;
+            const token = Math.random().toString(36).slice(2);
+            const url = new URL(da.getAttribute('href'), window.location.href);
+            url.searchParams.set('download_token', token);
+            da.href = url.toString();
+            open = true;
+            const cookieName = 'download_token_' + token;
+            const poll = setInterval(() => {
+                if (document.cookie.split(';').some(c => c.trim() === cookieName + '=1')) {
+                    open = false;
+                    clearInterval(poll);
+                    document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                }
+            }, 300);
+            setTimeout(() => { clearInterval(poll); open = false; }, 30000);
         });
     "
     @submit.window="if (!$event.defaultPrevented) open = true"
