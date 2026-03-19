@@ -24,29 +24,20 @@
 
             const da = e.target.closest('a[href][data-download]');
             if (!da) return;
-            e.preventDefault();
-            const href = da.getAttribute('href');
+            const token = Math.random().toString(36).slice(2);
+            const url = new URL(da.getAttribute('href'), window.location.href);
+            url.searchParams.set('download_token', token);
+            da.href = url.toString();
             open = true;
-            fetch(href)
-                .then(async response => {
-                    const blob = await response.blob();
-                    const disposition = response.headers.get('Content-Disposition');
-                    let filename = 'download';
-                    if (disposition) {
-                        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                        if (match) filename = match[1].replace(/['"]/g, '').trim();
-                    }
-                    const url = URL.createObjectURL(blob);
-                    const tempLink = document.createElement('a');
-                    tempLink.href = url;
-                    tempLink.download = filename;
-                    tempLink.style.display = 'none';
-                    document.body.appendChild(tempLink);
-                    tempLink.click();
-                    setTimeout(() => { document.body.removeChild(tempLink); URL.revokeObjectURL(url); }, 100);
+            const cookieName = 'download_token_' + token;
+            const poll = setInterval(() => {
+                if (document.cookie.split(';').some(c => c.trim() === cookieName + '=1')) {
                     open = false;
-                })
-                .catch(() => { open = false; });
+                    clearInterval(poll);
+                    document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                }
+            }, 300);
+            setTimeout(() => { clearInterval(poll); open = false; }, 30000);
         });
     "
     @submit.window="if (!$event.defaultPrevented) open = true"
