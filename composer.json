@@ -2,7 +2,7 @@
     "name": "trigonon/shared-ui",
     "description": "Shared UI components and layouts for Trigonon apps",
     "type": "library",
-    "version": "1.0.9",
+    "version": "1.1.01",
     "autoload": {
         "psr-4": {
             "Trigonon\\SharedUi\\": "src/"
