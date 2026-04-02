@@ -46,6 +46,7 @@
         <x-application-version/>
         <x-page-loading/>
         <x-confirm-modal/>
+        <x-prompt-modal/>
         @stack('scripts')
     </body>
 </html>
