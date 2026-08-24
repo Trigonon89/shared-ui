@@ -13,6 +13,7 @@ class ErrorLog extends Model
     protected function casts(): array
     {
         return [
+            'status_code' => 'integer',
             'notified_at' => 'datetime',
         ];
     }

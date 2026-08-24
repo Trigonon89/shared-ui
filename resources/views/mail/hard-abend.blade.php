@@ -1,5 +1,5 @@
 <x-mail::message>
-# Hard abend in {{ $errorLog->app }} ({{ $errorLog->environment }})
+# {{ $errorLog->status_code ?? 500 }} error in {{ $errorLog->app }} ({{ $errorLog->environment }})
 
 **{{ $errorLog->exception_class }}**
 
