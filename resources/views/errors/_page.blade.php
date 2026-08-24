@@ -86,10 +86,10 @@
         <h1>{{ $heading }}</h1>
         <p class="message">{{ $message }}</p>
         <div class="actions">
-            <button type="button" class="btn btn-secondary" onclick="if (document.referrer) { history.back(); } else { window.location.href = '/'; }">
+            <button type="button" class="btn btn-secondary" onclick="var t = window.top; if (t.document.referrer) { t.history.back(); } else { t.location.href = '/'; }">
                 &larr; Go back
             </button>
-            <a href="/" class="btn btn-primary">Home</a>
+            <a href="/" target="_top" class="btn btn-primary">Home</a>
         </div>
         @if ($errorId ?? null)
             <p class="ref">Reference #{{ $errorId }}</p>
