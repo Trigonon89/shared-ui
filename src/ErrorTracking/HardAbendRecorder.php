@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
@@ -67,6 +68,15 @@ class HardAbendRecorder
         // login handling for it. Bail out here so that default behavior
         // runs, same as every other routine 4xx already excluded below.
         if ($e instanceof AuthenticationException) {
+            return null;
+        }
+
+        // Same trap as AuthenticationException above: ValidationException
+        // (bad login credentials, failed form validation, etc.) doesn't
+        // implement HttpExceptionInterface either, so it would otherwise
+        // default to 500 and get recorded/emailed/rendered as a hard crash
+        // instead of Laravel's normal redirect-back-with-errors behavior.
+        if ($e instanceof ValidationException) {
             return null;
         }
 
