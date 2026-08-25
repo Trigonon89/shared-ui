@@ -2,6 +2,7 @@
 
 namespace Trigonon\SharedUi\ErrorTracking;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -54,6 +55,18 @@ class HardAbendRecorder
     {
         // API/JSON consumers keep their normal JSON error responses.
         if ($request->expectsJson() || $request->is('api/*')) {
+            return null;
+        }
+
+        // AuthenticationException (a guest hitting an `auth`-protected route
+        // — an expired session, a stale bookmark, a bot) doesn't implement
+        // HttpExceptionInterface, so the $status computation below would
+        // otherwise default it to 500 and treat completely routine traffic
+        // as a hard crash: recorded, emailed, AND rendered as the generic
+        // hard-abend page instead of Laravel's own built-in redirect-to-
+        // login handling for it. Bail out here so that default behavior
+        // runs, same as every other routine 4xx already excluded below.
+        if ($e instanceof AuthenticationException) {
             return null;
         }
 
