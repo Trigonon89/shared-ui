@@ -86,14 +86,50 @@
         <h1>{{ $heading }}</h1>
         <p class="message">{{ $message }}</p>
         <div class="actions">
-            <button type="button" class="btn btn-secondary" onclick="var t = window.top; if (t.document.referrer) { t.history.back(); } else { t.location.href = '/'; }">
+            <button type="button" class="btn btn-secondary" onclick="trigNav('back')">
                 &larr; Go back
             </button>
-            <a href="/" target="_top" class="btn btn-primary">Home</a>
+            <a href="/" class="btn btn-primary" onclick="return trigNav('home')">Home</a>
         </div>
         @if ($errorId ?? null)
             <p class="ref">Reference #{{ $errorId }}</p>
         @endif
     </div>
+    <script>
+        // Some browser/link-preview contexts (e.g. chat-app link unfurling) render this
+        // page inside a sandboxed, cross-origin srcdoc iframe. In that case window.top
+        // is unreachable and top-level navigation is blocked outright, so always fall
+        // back to navigating this window/frame instead of leaving the buttons dead.
+        function trigNav(mode) {
+            var top = null;
+            try {
+                if (window.top && window.top.document) {
+                    top = window.top;
+                }
+            } catch (e) {
+                top = null;
+            }
+
+            if (top) {
+                try {
+                    if (mode === 'back' && top.document.referrer) {
+                        top.history.back();
+                    } else {
+                        top.location.href = '/';
+                    }
+                    return false;
+                } catch (e) {
+                    // fall through to same-window navigation below
+                }
+            }
+
+            if (mode === 'back' && window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+            return false;
+        }
+    </script>
 </body>
 </html>
