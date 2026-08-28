@@ -96,38 +96,36 @@
         @endif
     </div>
     <script>
-        // Some browser/link-preview contexts (e.g. chat-app link unfurling) render this
-        // page inside a sandboxed, cross-origin srcdoc iframe. In that case window.top
-        // is unreachable and top-level navigation is blocked outright, so always fall
-        // back to navigating this window/frame instead of leaving the buttons dead.
+        // Some browser/link-preview contexts (e.g. chat-app link unfurling, embedded
+        // browser panes) render this page inside a sandboxed, cross-origin srcdoc
+        // iframe. In that case a sandboxed top-level navigation attempt is blocked
+        // *silently* (console warning only — it doesn't throw), so we can't detect
+        // failure with try/catch and branch on it. Instead we always attempt the
+        // top-level navigation AND queue a same-frame fallback a beat later: if the
+        // top navigation actually went through, this frame is torn down before the
+        // fallback fires and it never runs; if it was blocked, the fallback still
+        // gets the user somewhere instead of leaving the button dead.
         function trigNav(mode) {
-            var top = null;
-            try {
-                if (window.top && window.top.document) {
-                    top = window.top;
-                }
-            } catch (e) {
-                top = null;
-            }
-
-            if (top) {
+            if (window.top !== window.self) {
                 try {
-                    if (mode === 'back' && top.document.referrer) {
-                        top.history.back();
+                    if (mode === 'back' && window.top.document && window.top.document.referrer) {
+                        window.top.history.back();
                     } else {
-                        top.location.href = '/';
+                        window.top.location.href = '/';
                     }
-                    return false;
                 } catch (e) {
-                    // fall through to same-window navigation below
+                    // cross-origin without allow-same-origin — ignore, fallback below covers it
                 }
             }
 
-            if (mode === 'back' && window.history.length > 1) {
-                window.history.back();
-            } else {
-                window.location.href = '/';
-            }
+            setTimeout(function () {
+                if (mode === 'back' && window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/';
+                }
+            }, 100);
+
             return false;
         }
     </script>
